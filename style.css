@@ -1,0 +1,894 @@
+/* =========================================
+   1. 全局变量与重置 (Global & Reset)
+   ========================================= */
+:root {
+    /* 用户端配色 (绿色系) */
+    --primary-green: #4caf50;
+    --dark-green: #2e7d32;
+    --light-bg: #f1f8e9;
+    --hover-green: #388e3c;
+    
+    /* 管理员端配色 (蓝色系) */
+    --admin-color: #3f51b5;
+    --admin-dark: #303f9f;
+    --admin-light: #e8eaf6;
+
+    /* 通用颜色 */
+    --white: #ffffff;
+    --text-main: #333333;
+    --text-light: #666666;
+    --danger: #e53935;
+    --warning: #ff9800;
+    
+    /* 布局变量 */
+    --header-height: 70px;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --border-radius: 12px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+body {
+    background-color: var(--light-bg);
+    color: var(--text-main);
+    padding-top: var(--header-height); /* 给固定导航栏留出空间 */
+    min-height: 100vh;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+/* =========================================
+   2. 顶部导航栏 (Navigation)
+   ========================================= */
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--primary-green);
+}
+
+.logo-icon {
+    margin-right: 10px;
+    font-size: 28px;
+}
+
+.nav-center h1 {
+    font-size: 18px;
+    color: var(--text-main);
+    font-weight: normal;
+}
+
+.nav-right ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+
+.nav-item {
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    color: var(--text-light);
+}
+
+.nav-item:hover {
+    background-color: #e8f5e9;
+    color: var(--dark-green);
+}
+
+.nav-item.active {
+    background-color: var(--primary-green);
+    color: var(--white);
+    font-weight: bold;
+}
+
+/* 管理员导航栏特殊样式 */
+#admin-nav-list .nav-item.active {
+    background-color: var(--admin-color);
+}
+#admin-nav-list .nav-item:hover {
+    background-color: var(--admin-light);
+    color: var(--admin-dark);
+}
+
+/* =========================================
+   3. 主容器与页面切换 (Layout)
+   ========================================= */
+#app-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.page-section {
+    display: none;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.page-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   4. 认证模块 (Auth / Login / Register)
+   ========================================= */
+#auth-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.auth-container {
+    background: var(--white);
+    width: 420px;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.auth-header h2 {
+    color: var(--dark-green);
+    margin-bottom: 10px;
+}
+
+.auth-header p {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.auth-tabs {
+    display: flex;
+    margin: 25px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 15px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-btn.active {
+    color: var(--primary-green);
+    border-bottom-color: var(--primary-green);
+    font-weight: bold;
+}
+
+/* 管理员Tab特殊样式 */
+.tab-btn.admin-tab-btn.active {
+    color: var(--admin-color);
+    border-bottom-color: var(--admin-color);
+}
+
+.auth-form {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.auth-form.active {
+    display: flex;
+}
+
+.input-group {
+    position: relative;
+    text-align: left;
+}
+
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 12px 12px 45px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-green);
+}
+
+/* 管理员输入框聚焦颜色 */
+#admin-login-form .input-group input:focus {
+    border-color: var(--admin-color);
+}
+
+.btn-auth {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    background: var(--primary-green);
+    color: var(--white);
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-auth:hover {
+    background: var(--dark-green);
+}
+
+.btn-admin {
+    background: var(--admin-color);
+}
+
+.btn-admin:hover {
+    background: var(--admin-dark);
+}
+
+.admin-badge {
+    background: var(--admin-light);
+    color: var(--admin-dark);
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 15px;
+    display: inline-block;
+    width: 100%;
+}
+
+/* =========================================
+   5. 主界面 (Home) & 上传功能
+   ========================================= */
+.hero-banner {
+    background: linear-gradient(135deg, #66bb6a, #a5d6a7);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+}
+
+.hero-text h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.home-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.feature-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+}
+
+.feature-card h3 {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 上传区域样式 */
+.upload-zone h3 { color: var(--primary-green); }
+.rules-card h3 { color: var(--warning); }
+
+.file-upload-wrapper {
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #fafafa;
+    margin: 20px 0;
+}
+
+.file-upload-wrapper:hover {
+    border-color: var(--primary-green);
+    background: #f1f8e9;
+}
+
+.upload-placeholder i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.upload-placeholder p {
+    color: #999;
+}
+
+#preview-container {
+    margin-top: 10px;
+}
+
+#image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.upload-options {
+    margin: 15px 0;
+}
+
+.upload-options label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.upload-options select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    outline: none;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-green);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--dark-green);
+}
+
+/* 积分规则表格 */
+.rules-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.rules-table th {
+    background: #fff3e0;
+    color: #e65100;
+    text-align: left;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.rules-table td {
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: #555;
+}
+
+.rules-table .points {
+    color: var(--primary-green);
+    font-weight: bold;
+}
+
+.points-balance-card {
+    background: #e8f5e9;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #c8e6c9;
+}
+
+.points-balance-card p {
+    color: var(--dark-green);
+    font-size: 14px;
+}
+
+.points-balance-card h2 {
+    color: var(--dark-green);
+    font-size: 40px;
+    margin-top: 5px;
+}
+
+/* =========================================
+   6. 绿色地球 (Earth)
+   ========================================= */
+.earth-container {
+    background: var(--white);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: var(--card-shadow);
+}
+
+.planet-wrapper {
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.planet {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    box-shadow: inset -20px -20px 50px rgba(0,0,0,0.5);
+    transition: background 1s ease;
+}
+
+/* 地球各阶段样式 (可用颜色或图片) */
+.stage-1 { background-color: #8d6e63; } /* 荒芜 */
+.stage-2 { background: radial-gradient(circle, #8d6e63 30%, #a5d6a7 100%); }
+.stage-3 { background: radial-gradient(circle, #4caf50 60%, #81c784 100%); }
+.stage-4 { background: radial-gradient(circle, #2196f3 20%, #4caf50 100%); }
+.stage-5 { background: radial-gradient(circle, #0288d1 40%, #2e7d32 100%); } /* 完美 */
+
+.progress-bar-bg {
+    width: 60%;
+    height: 16px;
+    background: #eee;
+    border-radius: 10px;
+    margin: 15px auto;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #66bb6a, #43a047);
+    width: 0%;
+    transition: width 0.6s ease;
+}
+
+.earth-desc {
+    color: var(--text-light);
+    margin-top: 15px;
+}
+
+/* =========================================
+   7. 知识科普 (Knowledge) & 答题
+   ========================================= */
+.k-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.k-tab {
+    padding: 10px 25px;
+    border: 1px solid var(--primary-green);
+    background: none;
+    color: var(--primary-green);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.k-tab.active, .k-tab:hover {
+    background: var(--primary-green);
+    color: var(--white);
+}
+
+.k-content {
+    display: none;
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.k-content.active {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+/* 视频容器 */
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 关键点：这是 16:9 的比例 (9除以16=0.5625) */
+    height: 0;              /*以此高度设为0，由padding撑开*/
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* 确保 iframe 绝对定位填满容器 */
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* 政策卡片 */
+.policy-card {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--primary-green);
+}
+
+.policy-card h4 {
+    margin-bottom: 10px;
+    color: var(--dark-green);
+}
+
+/* 答题区域 */
+#quiz-area {
+    text-align: center;
+    min-height: 200px;
+}
+
+.quiz-item {
+    text-align: left;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.quiz-opt {
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.quiz-opt:hover { background: #e0e0e0; }
+
+.btn-submit {
+    padding: 10px 30px;
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* =========================================
+   8. 积分商城 (Mall)
+   ========================================= */
+.mall-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+.product-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    box-shadow: var(--card-shadow);
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.p-img {
+    height: 150px;
+    background: #eee;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+.product-card h4 {
+    margin-bottom: 5px;
+}
+
+.cost {
+    color: var(--warning);
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.btn-exchange {
+    background: var(--warning);
+    color: var(--white);
+    border: none;
+    padding: 6px 15px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-exchange:hover {
+    background: #f57c00;
+}
+
+/* =========================================
+   9. 个人中心 (Profile)
+   ========================================= */
+.profile-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 40px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.avatar-section {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid #eee;
+    padding-right: 20px;
+    min-width: 250px;
+}
+
+.avatar-section img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-green);
+    margin-bottom: 15px;
+}
+
+.profile-form, .info-section {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 300px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+    font-size: 14px;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+}
+
+.btn-logout {
+    background: var(--danger);
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* 10. 管理员后台样式 (Admin Panel)*/
+#admin-dashboard h2, #admin-audit h2 {
+    color: var(--admin-color);
+    margin-bottom: 20px;
+    border-left: 5px solid var(--admin-color);
+    padding-left: 15px;
+}
+
+/* 数据监控表格 */
+.admin-table-container {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.admin-table th {
+    background-color: var(--admin-light);
+    color: var(--admin-dark);
+    padding: 15px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.admin-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+.admin-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* 审核卡片布局 */
+.audit-tip {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.audit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.audit-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    box-shadow: var(--card-shadow);
+    border-top: 4px solid var(--warning); /* 待审核状态颜色 */
+    display: flex;
+    flex-direction: column;
+}
+
+.audit-img-box {
+    width: 100%;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    cursor: zoom-in;
+    background: #eee;
+}
+
+.audit-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.audit-img-box:hover img {
+    transform: scale(1.1);
+}
+
+.audit-info p {
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #555;
+}
+
+.score-input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.audit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-approve {
+    flex: 2;
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-approve:hover { background: var(--dark-green); }
+
+.btn-reject {
+    flex: 1;
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-reject:hover { background: #b71c1c; }
+
+/* =========================================
+   11. 响应式适配 (Responsive)
+   ========================================= */
+@media (max-width: 768px) {
+    /* 导航栏 */
+    .top-nav { padding: 0 15px; }
+    .nav-left span { display: none; } /* 隐藏文字logo */
+    .nav-center h1 { font-size: 14px; }
+    .nav-right ul { gap: 5px; }
+    .nav-item { padding: 5px 10px; font-size: 12px; }
+
+    /* 布局 */
+    .home-content-grid { grid-template-columns: 1fr; }
+    .profile-card { flex-direction: column; padding: 20px; }
+    .avatar-section { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 20px; padding-right: 0;}
+    
+    /* 认证框 */
+    .auth-container { width: 90%; padding: 20px; }
+}

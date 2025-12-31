@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绿循包裹 - 智能回收平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-nav" id="main-nav" style="display: none;">
+        <div class="nav-left">
+            <i class="fa-solid fa-leaf logo-icon"></i>
+            <span class="logo-text">绿循</span>
+        </div>
+        <div class="nav-center">
+            <h1 id="page-title">【绿循】大学生快递包装回收平台</h1>
+        </div>
+        <div class="nav-right">
+            <ul id="user-nav-list">
+                <li class="nav-item active" data-target="home">主界面</li>
+                <li class="nav-item" data-target="earth">绿色地球</li>
+                <li class="nav-item" data-target="knowledge">知识科普</li>
+                <li class="nav-item" data-target="mall">积分商城</li>
+                <li class="nav-item" data-target="profile">我的</li>
+            </ul>
+            <ul id="admin-nav-list" style="display: none;">
+                <li class="nav-item active" data-target="admin-dashboard">数据监控</li>
+                <li class="nav-item" data-target="admin-audit">审核中心</li>
+                <li class="nav-item" onclick="logout()">退出管理</li>
+            </ul>
+        </div>
+    </header>
+
+    <main id="app-container">
+        
+        <section id="auth-section">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2>欢迎来到绿循</h2>
+                    <p>让每一个包裹回归自然</p>
+                </div>
+                
+                <div class="auth-tabs">
+                    <button class="tab-btn active" onclick="switchAuth('login')">用户登录</button>
+                    <button class="tab-btn" onclick="switchAuth('register')">注册账号</button>
+                    <button class="tab-btn admin-tab-btn" onclick="switchAuth('admin')">管理员入口</button>
+                </div>
+
+                <form id="login-form" class="auth-form active">
+                    <div class="input-group">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="login-user" placeholder="用户名" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-pass" placeholder="密码" required>
+                    </div>
+                    <button type="submit" class="btn-auth">登 录</button>
+                </form>
+
+                <form id="register-form" class="auth-form">
+                    <div class="input-group">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <input type="text" id="reg-user" placeholder="设置用户名" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="reg-pass" placeholder="设置密码" required>
+                    </div>
+                    <button type="submit" class="btn-auth">注 册</button>
+                </form>
+
+                <form id="admin-login-form" class="auth-form">
+                    <div class="admin-badge"><i class="fa-solid fa-user-shield"></i> 管理员系统</div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-user-secret"></i>
+                        <input type="text" id="admin-user" placeholder="管理员账号" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="admin-pass" placeholder="管理员密码" required>
+                    </div>
+                    <button type="submit" class="btn-auth btn-admin">管理员登录</button>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">(测试账号: admin / 123456)</p>
+                </form>
+            </div>
+        </section>
+
+        <section id="home" class="page-section">
+            <div class="hero-banner">
+                <div class="hero-text">
+                    <h2>每一次回收，都是对地球的告白</h2>
+                    <p>当前全平台累计回收：<span id="total-recycle-count">1,245</span> 件</p>
+                </div>
+            </div>
+
+            <div class="home-content-grid">
+                <div class="feature-card upload-zone">
+                    <h3><i class="fa-solid fa-camera"></i> 拍照回收赚积分</h3>
+                    <p>上传您的快递包裹回收照片，等待管理员审核后即可获得积分！</p>
+                    
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="recycle-photo-input" accept="image/*">
+                        <div class="upload-placeholder" onclick="document.getElementById('recycle-photo-input').click()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <p>点击选择图片或拍照</p>
+                        </div>
+                        <div id="preview-container" style="display: none;">
+                            <img id="image-preview" src="" alt="预览图">
+                            <p id="file-name-display"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-options">
+                        <label>包装类型：</label>
+                        <select id="recycle-type">
+                            <option value="carton">瓦楞纸箱</option>
+                            <option value="plastic">塑料包装袋</option>
+                            <option value="filler">气泡膜/填充物</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="submitUpload()">提交审核</button>
+                </div>
+
+                <div class="feature-card rules-card">
+                    <h3><i class="fa-solid fa-clipboard-list"></i> 积分奖励规则</h3>
+                    <table class="rules-table">
+                        <thead>
+                            <tr>
+                                <th>回收物品</th>
+                                <th>奖励积分</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="fa-solid fa-box"></i> 完整纸箱</td>
+                                <td class="points">+10-20</td>
+                                <td>无破损，压扁回收</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-solid fa-bag-shopping"></i> 塑料包装</td>
+                                <td class="points">+5</td>
+                                <td>干净无油污</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-brands fa-buffer"></i> 填充气泡膜</td>
+                                <td class="points">+5</td>
+                                <td>可再利用状态</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-solid fa-recycle"></i> 混合回收</td>
+                                <td class="points">+2</td>
+                                <td>其他可回收物</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="points-balance-card">
+                        <p>我的当前积分</p>
+                        <h2 id="home-points">0</h2>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="earth" class="page-section">
+            <div class="earth-container">
+                <h3>我的环保星球</h3>
+                <div class="planet-wrapper">
+                    <div id="planet" class="planet stage-1"></div>
+                </div>
+                <h4 id="earth-stage-name">荒芜地球</h4>
+                <div class="progress-bar-bg">
+                    <div id="earth-progress" class="progress-bar-fill"></div>
+                </div>
+                <p class="earth-desc">通过答题、回收赚取积分，让你的星球恢复生机！</p>
+            </div>
+        </section>
+
+<section id="knowledge" class="page-section">
+    <div class="k-tabs">
+        <button class="k-tab active" onclick="switchKnowledge('video')">科普视频</button>
+        <button class="k-tab" onclick="switchKnowledge('policy')">政策解读</button>
+        <button class="k-tab" onclick="switchKnowledge('quiz')">每日答题</button>
+    </div>
+    
+    <div id="k-video" class="k-content active">
+        <div class="video-container">
+            <iframe src="科普视频.mp4" 
+                    allowfullscreen="allowfullscreen" 
+                    scrolling="no" 
+                    frameborder="0">
+            </iframe>
+        </div>
+    </div>
+
+            <div id="k-policy" class="k-content">
+    
+    <div class="policy-card">
+        <h4><i class="fa-solid fa-scale-balanced"></i> 国家核心法规与指导意见</h4>
+        <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                <a href="国务院办公厅转发国家发展改革委等部门关于加快推进快递包装绿色转型意见的通知.pdf" target="_blank" style="text-decoration: none;">
+                    <div style="font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        《关于加快推进快递包装绿色转型的意见》 
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 12px; color: #aaa;"></i>
+                    </div>
+                </a>
+                <div style="font-size: 12px; color: #666; margin: 4px 0;">
+                    <span style="background:#e8f5e9; padding:2px 6px; border-radius:4px;">国务院办公厅</span> 2020年发布
+                </div>
+                <p style="font-size: 14px; margin-top: 5px; color: #333;">提出强化快递包装绿色治理，明确到2025年，电商快件基本实现不再二次包装，可循环快递包装应用规模达1000万个。</p>
+            </li>
+
+            <li style="margin-bottom: 5px;">
+                <a href="邮件快件包装管理办法（中华人民共和国交通运输部令2021年第1号）.pdf" target="_blank" style="text-decoration: none;">
+                    <div style="font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        《邮件快件包装管理办法》
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 12px; color: #aaa;"></i>
+                    </div>
+                </a>
+                <div style="font-size: 12px; color: #666; margin: 4px 0;">
+                    <span style="background:#e8f5e9; padding:2px 6px; border-radius:4px;">交通运输部</span> 2021年施行
+                </div>
+                <p style="font-size: 14px; margin-top: 5px; color: #333;">明确了寄递企业“包装减量”的义务，禁止使用重金属超标、溶剂残留超标的有毒有害包装。</p>
+            </li>
+        </ul>
+    </div>
+
+    <div class="policy-card">
+        <h4><i class="fa-solid fa-bullseye"></i> 重点工程与国家标准</h4>
+        <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                <a href="国家邮政局 “9917” 工程.pdf" target="_blank" style="text-decoration: none;">
+                    <div style="font-weight: bold; color: #1976d2; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        国家邮政局 “9917” 工程
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 12px; color: #aaa;"></i>
+                    </div>
+                </a>
+                <p style="font-size: 14px; margin-top: 5px; color: #333;">中国快递业的绿色目标：采购使用符合标准的包装材料比例达到<strong>90%</strong>，规范包装操作比例达到<strong>90%</strong>，累计投放可循环快递箱（盒）达到<strong>1000万</strong>个。</p>
+            </li>
+
+            <li style="margin-bottom: 5px;">
+                <a href="《快递封装用品》.pdf" target="_blank" style="text-decoration: none;">
+                    <div style="font-weight: bold; color: #1976d2; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        GB/T 16606《快递封装用品》系列国标
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 12px; color: #aaa;"></i>
+                    </div>
+                </a>
+                <p style="font-size: 14px; margin-top: 5px; color: #333;">对封套、包装箱、包装袋的生物降解性能提出了具体要求，强制推行可降解材料在物流领域的应用。</p>
+            </li>
+        </ul>
+    </div>
+
+    <div class="policy-card" style="background: #fff3e0;">
+        <h4><i class="fa-solid fa-triangle-exclamation"></i> 法律小贴士：违规后果</h4>
+        <a href="中华人民共和国固体废物污染环境防治法.pdf" target="_blank" style="text-decoration: none; color: #333;">
+            <p style="font-size: 14px; cursor: pointer;">
+                根据<span style="text-decoration: underline; color: #e65100; font-weight:bold;">《固废法》</span>，电子商务、快递、外卖等行业如果不遵守国家有关禁止、限制使用不可降解塑料袋等一次性塑料制品的规定，最高可处<strong>10万元</strong>罚款。（点击查看法律全文）
+            </p>
+        </a>
+    </div>
+
+</div>
+<div id="quiz-area" style="position: relative; min-height: 200px;">
+    
+    <div id="start-screen">
+        <div class="quiz-intro">
+            <i class="fa-solid fa-clipboard-question" style="font-size: 40px; color: #2e7d32; margin-bottom: 10px;"></i>
+            <p>题库包含100道环保知识题<br>每次随机抽取10题挑战</p>
+        </div>
+        <button class="btn-primary" onclick="startQuiz()">开始今日答题</button>
+    </div>
+
+    <div id="question-screen" style="display: none;">
+        <div class="progress-bar">
+            <span id="current-question-num">1</span> / 10
+        </div>
+        <h4 id="question-text" style="margin: 15px 0; color: #333;">题目加载中...</h4>
+        <div id="options-container" class="options-list">
+            </div>
+    </div>
+
+    <div id="result-screen" style="display: none; text-align: center;">
+        <i class="fa-solid fa-trophy" style="font-size: 50px; color: #fbc02d; margin-bottom: 15px;"></i>
+        <h3>挑战完成！</h3>
+        <p>你的得分：<strong id="final-score" style="color: #2e7d32; font-size: 24px;">0</strong> / 10</p>
+        <p id="result-comment" style="color: #666; font-size: 14px; margin-bottom: 20px;"></p>
+        <button class="btn-primary" onclick="resetQuiz()">再来一次</button>
+    </div>
+
+</div>
+        </section>
+
+        <section id="mall" class="page-section">
+            <h2>积分兑换</h2>
+            <div class="mall-grid">
+                <div class="product-card">
+                    <div class="p-img">环保袋</div>
+                    <h4>帆布环保袋</h4>
+                    <p class="cost">50 积分</p>
+                    <button class="btn-exchange" onclick="exchange(50, '帆布环保袋')">兑换</button>
+                </div>
+                <div class="product-card">
+                    <div class="p-img">文具</div>
+                    <h4>再生纸笔记本</h4>
+                    <p class="cost">100 积分</p>
+                    <button class="btn-exchange" onclick="exchange(100, '再生纸笔记本')">兑换</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="profile" class="page-section">
+            <div class="profile-card">
+                <div class="avatar-section">
+                    <img id="profile-avatar" src="https://via.placeholder.com/150" alt="头像">
+                    <input type="file" id="avatar-input" accept="image/*" style="margin-top:10px;">
+                    <h3 id="profile-username">User</h3>
+                </div>
+                <div class="info-section">
+                    <p>当前积分: <span id="profile-points-num" style="color:green;font-weight:bold;">0</span></p>
+                    
+                    <div class="form-group" style="margin-top:15px;">
+                        <label>真实姓名</label>
+                        <input type="text" id="p-realname">
+                    </div>
+                    <div class="form-group">
+                        <label>学院</label>
+                        <input type="text" id="p-college">
+                    </div>
+                    <div class="form-group">
+                        <label>电话</label>
+                        <input type="text" id="p-phone">
+                    </div>
+
+                    <button class="btn-primary" onclick="saveProfile()" style="margin-top:10px;">保存信息</button>
+                    <button class="btn-logout" onclick="logout()">退出登录</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin-dashboard" class="page-section">
+            <h2><i class="fa-solid fa-chart-line"></i> 用户数据监控</h2>
+            <div class="admin-table-container">
+                <table class="admin-table" id="user-list-table">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>真实姓名</th>
+                            <th>学院</th>
+                            <th>当前积分</th>
+                            <th>地球状态</th>
+                            <th>注册时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="admin-audit" class="page-section">
+            <h2><i class="fa-solid fa-gavel"></i> 回收图片审核</h2>
+            <p class="audit-tip">请审核用户上传的照片，若符合要求则给予相应积分。</p>
+            
+            <div id="audit-list" class="audit-grid">
+                </div>
+            <div id="no-audit-msg" style="text-align:center; color:#999; margin-top:50px; display:none;">
+                <i class="fa-solid fa-check-circle"></i> 暂无待审核任务
+            </div>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
