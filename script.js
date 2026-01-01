@@ -220,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 switchTab('home'); 
             }, 50); // 加一点点延迟确保DOM加载完毕
         }
+        // 在 loginSuccess 函数的最后加上这一行：
+            initAvatarUpload();
     }
 
     function loginAsAdmin() {
@@ -332,6 +334,15 @@ document.addEventListener('DOMContentLoaded', () => {
             startQuizBtn.disabled = false;
         }
     }
+    // 在 loginSuccess 函数里，或者 initApp 函数里添加：
+
+if (currentUser && currentUser.avatar) {
+    // 如果用户之前保存过头像，就显示保存的头像
+    const avatarImg = document.getElementById('profile-avatar');
+    if (avatarImg) {
+        avatarImg.src = currentUser.avatar;
+    }
+}
     }
 
     // 地球进化逻辑
@@ -841,5 +852,52 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAuditList(); // 刷新列表
         alert('操作成功！');
     };
+    // --- 处理头像上传的专用函数 ---
+function initAvatarUpload() {
+    const avatarInput = document.getElementById('avatar-input');
+    const avatarImg = document.getElementById('profile-avatar');
+
+    // 如果找不到元素，就直接退出
+    if (!avatarInput || !avatarImg) return;
+
+    // 监听：当用户选择了新图片时
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 限制大小（可选，比如限制2MB）
+        if (file.size > 2 * 1024 * 1024) {
+            alert("图片太大了，请上传小于2MB的图片");
+            return;
+        }
+
+        // 使用 FileReader 读取图片文件
+        const reader = new FileReader();
+        
+        // 读取完成后的回调
+        reader.onload = function(event) {
+            const base64String = event.target.result;
+            
+            // 1. 立即在界面上显示预览
+            avatarImg.src = base64String;
+
+            // 2. 保存到当前用户对象
+            if (currentUser) {
+                currentUser.avatar = base64String;
+
+                // 3. 同步更新到 localStorage (永久保存)
+                const userIndex = users.findIndex(u => u.username === currentUser.username);
+                if (userIndex !== -1) {
+                    users[userIndex] = currentUser;
+                    localStorage.setItem('greenUsers', JSON.stringify(users));
+                }
+                alert("头像修改成功！");
+            }
+        };
+
+        // 开始读取文件（转换为 Base64 编码字符串）
+        reader.readAsDataURL(file);
+    });
+}
 
 });
