@@ -409,6 +409,18 @@ body {
 .btn-primary:hover {
     background: var(--dark-green);
 }
+/* --- 新增：答题按钮禁用状态 --- */
+.btn-primary.disabled {
+    background-color: #ccc !important; /* 强制变灰 */
+    cursor: not-allowed;      /* 鼠标变成禁止符号 */
+    transform: none;          /* 移除点击时的动画效果 */
+    box-shadow: none;         /* 移除阴影 */
+}
+
+/* 确保鼠标悬停时也是灰色 */
+.btn-primary.disabled:hover {
+    background-color: #ccc !important;
+}
 
 /* 积分规则表格 */
 .rules-table {
