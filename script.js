@@ -33,67 +33,193 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 注册逻辑
-    document.getElementById('register-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const u = document.getElementById('r-username').value;
-        const p = document.getElementById('r-password').value;
+// =========================================
+    // 1. 认证模块 (Auth) - 修复版
+    // =========================================
 
-        if (users.find(user => user.username === u)) {
-            alert('用户名已存在！');
+    // 切换登录/注册/管理员 Tab
+    window.switchAuth = (type) => {
+        // 隐藏所有表单
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        // 移除Tab高亮
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        if (type === 'login') {
+            document.getElementById('login-form').classList.add('active');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        } else if (type === 'register') {
+            document.getElementById('register-form').classList.add('active');
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        } else if (type === 'admin') {
+            document.getElementById('admin-login-form').classList.add('active');
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        }
+    };
+
+// --- A. 普通用户登录处理 ---
+    window.handleUserLogin = () => {
+        const uInput = document.getElementById('login-user');
+        const pInput = document.getElementById('login-pass');
+        
+        if (!uInput || !pInput) return;
+
+        const u = uInput.value.trim();
+        const p = pInput.value.trim();
+
+        if (!u || !p) { alert("请输入用户名和密码"); return; }
+
+        const user = users.find(item => item.username === u && item.password === p);
+
+        if (user) {
+            currentUser = user;
+            isAdmin = false;
+            alert('登录成功！欢迎 ' + u);
+            // 核心修改：登录成功直接调用 loginSuccess，不传参数代表普通用户
+            loginSuccess(); 
+        } else {
+            alert('用户名或密码错误！(新用户请先注册)');
+        }
+    };
+
+// --- B. 管理员登录处理 ---
+    window.handleAdminLogin = () => {
+        const uInput = document.getElementById('admin-user');
+        const pInput = document.getElementById('admin-pass');
+        
+        if (!uInput || !pInput) return;
+        
+        const u = uInput.value.trim();
+        const p = pInput.value.trim();
+
+        // 验证管理员账号密码
+        if (u === 'admin' && p === '123456') {
+            currentUser = { username: 'admin', role: 'admin' };
+            isAdmin = true; // 标记为管理员
+            alert('管理员登录成功！');
+            
+            // 传入 'admin' 参数，指示这是管理员登录
+            loginSuccess('admin'); 
+        } else {
+            alert('管理员账号或密码错误！');
+        }
+    };
+
+    // --- C. 注册处理 ---
+    // 对应 HTML 中的 onclick="handleRegister()"
+    window.handleRegister = () => {
+        const uInput = document.getElementById('reg-user');
+        const pInput = document.getElementById('reg-pass');
+
+        if (!uInput || !pInput) return;
+
+        const u = uInput.value.trim();
+        const p = pInput.value.trim();
+
+        if (!u || !p) { alert("请设置用户名和密码"); return; }
+
+        // 检查是否重名
+        if (users.find(item => item.username === u)) {
+            alert('用户名已存在，请换一个');
             return;
         }
 
+        // 创建新用户
         const newUser = {
             username: u,
             password: p,
             points: 0,
-            avatar: 'images/default-avatar.png',
+            avatar: 'https://via.placeholder.com/150',
             info: {},
-            regDate: new Date().toLocaleDateString()
+            regDate: new Date().toLocaleDateString(),
+            lastQuizDate: "" // 初始化答题日期
         };
+
         users.push(newUser);
-        saveData();
-        alert('注册成功，请登录！');
+        saveData(); // 保存到本地存储
+        alert('注册成功！请切换到登录页面进行登录。');
+        
+        // 自动切回登录页
         switchAuth('login');
-    });
+    };
 
-    // 登录逻辑
-    document.getElementById('login-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const u = document.getElementById('l-username').value;
-        const p = document.getElementById('l-password').value;
-
-        // 管理员后门 (账号: admin / 密码: 123456)
-        if (u === 'admin' && p === '123456') {
-            loginAsAdmin();
-            return;
-        }
-
-        const user = users.find(user => user.username === u && user.password === p);
-        if (user) {
-            currentUser = user;
-            loginSuccess();
-        } else {
-            alert('用户名或密码错误！');
-        }
-    });
-
+    // --- 登录成功后的跳转逻辑 ---
     function loginSuccess() {
+        // 1. 隐藏认证大框
         authSection.style.display = 'none';
+        
+        // 2. 显示主程序区域
         appContainer.style.display = 'block';
         mainNav.style.display = 'flex';
-        isAdmin = false;
-        
-        // UI 更新
-        document.getElementById('user-nav-list').style.display = 'flex';
-        document.getElementById('admin-nav-list').style.display = 'none';
-        document.body.classList.remove('admin-mode');
-        
-        // 加载用户数据
-        updateGlobalUI();
-        loadRecycleRecords();
-        switchTab('home');
+
+        // 3. 根据身份显示不同的菜单
+        const userNav = document.getElementById('user-nav-list');
+        const adminNav = document.getElementById('admin-nav-list');
+
+        if (isAdmin) {
+            // 是管理员
+            userNav.style.display = 'none';
+            adminNav.style.display = 'flex';
+            pageTitle.innerText = "【绿循】后台管理系统";
+            document.body.classList.add('admin-mode');
+            
+            // 直接跳到数据监控页
+            switchTab('admin-dashboard');
+        } else {
+            // 是普通用户
+            userNav.style.display = 'flex';
+            adminNav.style.display = 'none';
+            pageTitle.innerText = "【绿循】大学生快递包装回收平台";
+            document.body.classList.remove('admin-mode');
+            
+            // 加载用户数据并跳到主页
+            updateGlobalUI();
+            loadRecycleRecords();
+            switchTab('home');
+        }
+    }
+
+// --- 登录成功后的跳转逻辑 ---
+// --- 登录成功后的跳转逻辑 ---
+    function loginSuccess(roleType) {
+        // 1. 隐藏登录框，显示主容器
+        document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+        document.getElementById('main-nav').style.display = 'flex';
+
+        const userNav = document.getElementById('user-nav-list');
+        const adminNav = document.getElementById('admin-nav-list');
+        const pageTitle = document.getElementById('page-title');
+
+        // 2. 判断是管理员还是普通用户
+        if (roleType === 'admin' || isAdmin) {
+            // === 管理员模式 ===
+            userNav.style.display = 'none';
+            adminNav.style.display = 'flex';
+            pageTitle.innerText = "【绿循】后台管理系统";
+            document.body.classList.add('admin-mode');
+
+            if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
+            if (typeof loadAuditList === 'function') loadAuditList();
+            
+            // 强制跳转到管理员首页
+            switchTab('admin-dashboard');
+
+        } else {
+            // === 普通用户模式 ===
+            userNav.style.display = 'flex';
+            adminNav.style.display = 'none';
+            pageTitle.innerText = "【绿循】大学生快递包装回收平台";
+            document.body.classList.remove('admin-mode');
+
+            if (typeof updateGlobalUI === 'function') updateGlobalUI();
+            if (typeof loadRecycleRecords === 'function') loadRecycleRecords();
+            
+            // 【核心修复】：强制跳转到 'home' 主界面
+            // 这行代码会让页面从“空白”变成“图二”的样子
+            setTimeout(() => {
+                switchTab('home'); 
+            }, 50); // 加一点点延迟确保DOM加载完毕
+        }
     }
 
     function loginAsAdmin() {
@@ -141,18 +267,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    function switchTab(targetId) {
-        // 移除所有高亮和显示
-        navItems.forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+// --- 页面切换逻辑 ---
+    window.switchTab = (targetId) => {
+        // 1. 导航栏高亮处理
+        document.querySelectorAll('.nav-item').forEach(item => {
+            // 移除所有高亮
+            item.classList.remove('active');
+            // 如果这个按钮对应我们要去的目标，就点亮它
+            if (item.getAttribute('data-target') === targetId) {
+                item.classList.add('active');
+            }
+        });
 
-        // 激活目标
-        document.querySelector(`.nav-item[data-target="${targetId}"]`)?.classList.add('active');
-        document.getElementById(targetId).classList.add('active');
+        // 2. 页面内容显示处理
+        document.querySelectorAll('.page-section').forEach(sec => {
+            // 先隐藏所有板块
+            sec.style.display = 'none';
+            sec.classList.remove('active');
+        });
 
-        // 特殊处理
-        if (targetId === 'earth' && !isAdmin) updateEarth(currentUser.points);
-    }
+        // 3. 找到目标板块并显示
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            targetSection.style.display = 'block'; // 强制显示
+            targetSection.classList.add('active'); // 添加动画类
+        } else {
+            console.error("找不到目标页面:", targetId);
+        }
+
+        // 4. 特殊处理：如果是地球页面，刷新一下数据
+        if (targetId === 'earth' && !isAdmin && currentUser) {
+            if (typeof updateEarth === 'function') updateEarth(currentUser.points);
+        }
+    };
 
     // 更新全局UI (积分、头像等)
     function updateGlobalUI() {
@@ -409,108 +556,99 @@ document.addEventListener('DOMContentLoaded', () => {
         score: 0
     };
 
-    // --- 2. 修改：开始答题逻辑（包含日期检查 + 随机抽题）---
+    // --- 2. 修改：开始答题逻辑 ---
     window.startQuiz = () => {
         if (!currentUser) { 
             alert("请先登录！"); 
             return; 
         }
         
-        // 1. 获取今天的日期字符串 (例如 "2023/12/01")
         const today = new Date().toLocaleDateString();
         
-        // 2. 检查用户资料里是否记录了今天的日期
         if (currentUser.lastQuizDate === today) {
             alert("您今天已经完成过答题了，请明天再来挑战！");
             return;
         }
 
-        // 3. 随机逻辑：打乱题库，取前10个
-        // sort(() => 0.5 - Math.random()) 是一个简易的数组乱序方法
+        // 随机抽题
         const shuffled = [...fullQuestionBank].sort(() => 0.5 - Math.random());
         currentSessionQuestions = shuffled.slice(0, 10);
         
-        // 4. 初始化状态
+        // 初始化状态
         currentQuizState = {
             active: true,
             questionIndex: 0,
             score: 0
         };
 
-        // 5. 切换界面显示 (隐藏开始页，显示答题页)
-        document.getElementById('quiz-start-screen').style.display = 'none';
-        document.getElementById('quiz-result-screen').style.display = 'none';
-        document.getElementById('quiz-play-screen').style.display = 'block';
+        // 【关键修改】这里修正了ID，与 HTML 保持一致
+        document.getElementById('start-screen').style.display = 'none';     // 原来是 quiz-start-screen
+        document.getElementById('result-screen').style.display = 'none';    // 原来是 quiz-result-screen
+        document.getElementById('question-screen').style.display = 'block'; // 原来是 quiz-play-screen
 
-        // 6. 渲染第一题
         renderQuestion();
     };
-
-// --- 3. 新增：渲染题目 ---
+// --- 3. 修改：渲染题目 ---
     function renderQuestion() {
         const qIndex = currentQuizState.questionIndex;
         const qData = currentSessionQuestions[qIndex];
 
-        // 更新进度文字
-        document.getElementById('quiz-progress').innerText = `第 ${qIndex + 1} / ${currentSessionQuestions.length} 题`;
-        document.getElementById('quiz-score-display').innerText = `本局得分: ${currentQuizState.score}`;
+        // 【关键修改】修正进度显示的 ID
+        const progressNum = document.getElementById('current-question-num');
+        if (progressNum) {
+            progressNum.innerText = qIndex + 1;
+        }
+
+        // 【关键修改】HTML中没有实时分数显示区域，注释掉这行防止报错
+        // document.getElementById('quiz-score-display').innerText = ...;
 
         // 显示题目
         document.getElementById('question-text').innerText = qData.question;
 
         // 生成选项按钮
         const optsContainer = document.getElementById('options-container');
-        optsContainer.innerHTML = ''; // 清空旧选项
+        optsContainer.innerHTML = ''; 
 
         qData.options.forEach((optText, idx) => {
             const btn = document.createElement('button');
-            btn.className = 'quiz-option-btn'; // 使用CSS中定义的样式
+            btn.className = 'quiz-option-btn'; 
             btn.innerText = optText;
-            btn.onclick = () => selectAnswer(idx, btn); // 绑定点击事件
+            btn.onclick = () => selectAnswer(idx, btn);
             optsContainer.appendChild(btn);
         });
 
-        // 重置反馈区域和下一题按钮
-        const feedback = document.getElementById('quiz-feedback');
-        feedback.style.display = 'none';
-        feedback.className = 'quiz-feedback';
-        
-        const nextBtn = document.getElementById('btn-next-question');
-        nextBtn.style.display = 'none';
-        nextBtn.innerText = (qIndex === currentSessionQuestions.length - 1) ? "完成挑战" : "下一题";
+        // 这里的反馈区域相关代码，如果HTML里没有 quiz-feedback 也会报错
+        // 建议暂时移除反馈样式的查找，直接依赖 selectAnswer 里的 alert
     }
 
-    // --- 4. 新增：选择答案逻辑 ---
+// --- 4. 修改：选择答案逻辑 ---
     window.selectAnswer = (selectedIndex, btnElement) => {
         const qIndex = currentQuizState.questionIndex;
         const correctIndex = currentSessionQuestions[qIndex].correct;
         const allBtns = document.querySelectorAll('.quiz-option-btn');
-        const feedback = document.getElementById('quiz-feedback');
 
-        // 锁死所有按钮，防止重复点击
+        // 锁死按钮
         allBtns.forEach(b => {
             b.disabled = true;
-            b.classList.add('disabled');
+            b.style.opacity = "0.7"; // 简单的视觉反馈
         });
 
-        // 判断对错
         if (selectedIndex === correctIndex) {
-            btnElement.classList.add('correct');
-            currentQuizState.score += 1; // 答对 +1 分
-            feedback.innerText = "回答正确！ +1 积分";
-            feedback.classList.add('success');
+            btnElement.style.backgroundColor = "#d4edda"; // 变绿
+            btnElement.style.borderColor = "#28a745";
+            currentQuizState.score += 1;
+            // 简单的弹窗反馈（防止找不到DOM报错）
+            alert("✅ 回答正确！+1分");
         } else {
-            btnElement.classList.add('wrong');
-            // 把正确答案标绿
-            allBtns[correctIndex].classList.add('correct');
-            feedback.innerText = "回答错误！正确答案是：" + currentSessionQuestions[qIndex].options[correctIndex];
-            feedback.classList.add('error');
+            btnElement.style.backgroundColor = "#f8d7da"; // 变红
+            btnElement.style.borderColor = "#dc3545";
+            // 标出正确答案
+            allBtns[correctIndex].style.backgroundColor = "#d4edda"; 
+            alert("❌ 回答错误！正确答案是：" + currentSessionQuestions[qIndex].options[correctIndex]);
         }
 
-        // 显示反馈和下一题按钮
-        document.getElementById('quiz-score-display').innerText = `本局得分: ${currentQuizState.score}`;
-        feedback.style.display = 'block';
-        document.getElementById('btn-next-question').style.display = 'inline-block';
+        // 自动进入下一题
+        window.nextQuestion();
     };
 
     // --- 5. 新增：下一题逻辑 ---
@@ -523,29 +661,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 6. 新增：结算逻辑 (保存日期和积分) ---
+// --- 6. 修改：结算逻辑 ---
     function finishQuiz() {
-        // 切换界面
-        document.getElementById('quiz-play-screen').style.display = 'none';
-        document.getElementById('quiz-result-screen').style.display = 'block';
+        // 【关键修改】修正ID
+        document.getElementById('question-screen').style.display = 'none'; // 原来是 quiz-play-screen
+        document.getElementById('result-screen').style.display = 'block';  // 原来是 quiz-result-screen
+        
+        // 显示最终分数
         document.getElementById('final-score').innerText = currentQuizState.score;
+
+        // 根据分数给出评语 (可选)
+        const comment = document.getElementById('result-comment');
+        if (comment) {
+            if (currentQuizState.score >= 8) comment.innerText = "太棒了！你是环保达人！";
+            else if (currentQuizState.score >= 5) comment.innerText = "还不错，继续加油！";
+            else comment.innerText = "还需要多多学习环保知识哦~";
+        }
 
         const userIdx = users.findIndex(u => u.username === currentUser.username);
         if (userIdx !== -1) {
-            // 加分
             users[userIdx].points += currentQuizState.score;
-            
-            // 关键：记录今天的日期，防止重复答题
             users[userIdx].lastQuizDate = new Date().toLocaleDateString();
 
-            // 更新缓存
             currentUser.points = users[userIdx].points;
             currentUser.lastQuizDate = users[userIdx].lastQuizDate;
 
-            saveData();       // 保存到 LocalStorage
-            updateGlobalUI(); // 刷新右上角头像和积分显示
+            saveData();
+            updateGlobalUI();
         }
     }
+    // 重置并回到开始界面
+    window.resetQuiz = () => {
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'block';
+        // 刷新一下UI状态，让开始按钮变灰（因为今天已经答过了）
+        updateGlobalUI();
+    };
 
 
     // =========================================

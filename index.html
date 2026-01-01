@@ -57,7 +57,7 @@
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" id="login-pass" placeholder="密码" required>
                     </div>
-                    <button type="submit" class="btn-auth">登 录</button>
+                    <button type="button" class="btn-auth" onclick="handleUserLogin()">登 录</button>
                 </form>
 
                 <form id="register-form" class="auth-form">
@@ -69,7 +69,7 @@
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" id="reg-pass" placeholder="设置密码" required>
                     </div>
-                    <button type="submit" class="btn-auth">注 册</button>
+                    <button type="button" class="btn-auth" onclick="handleRegister()">注 册</button>
                 </form>
 
                 <form id="admin-login-form" class="auth-form">
@@ -82,7 +82,7 @@
                         <i class="fa-solid fa-key"></i>
                         <input type="password" id="admin-pass" placeholder="管理员密码" required>
                     </div>
-                    <button type="submit" class="btn-auth btn-admin">管理员登录</button>
+                    <button type="button" class="btn-auth btn-admin" onclick="handleAdminLogin()">管理员登录</button>
                     <p style="font-size: 12px; color: #666; margin-top: 10px;">(测试账号: admin / 123456)</p>
                 </form>
             </div>

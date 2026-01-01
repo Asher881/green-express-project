@@ -567,15 +567,14 @@ body {
 .video-container {
     position: relative;
     width: 100%;
-    padding-bottom: 56.25%; /* 关键点：这是 16:9 的比例 (9除以16=0.5625) */
-    height: 0;              /*以此高度设为0，由padding撑开*/
+    padding-bottom: 56.25%; /* 16:9 比例 */
+    height: 0;
     background: #000;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-/* 确保 iframe 绝对定位填满容器 */
 .video-container iframe {
     position: absolute;
     top: 0;
@@ -599,38 +598,129 @@ body {
     color: var(--dark-green);
 }
 
-/* 答题区域 */
+/* ----------------------------------
+   答题区域样式 (全新升级)
+   ---------------------------------- */
 #quiz-area {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 350px; /* 保证高度一致，防止跳动 */
+    position: relative;
+}
+
+/* 通用动画 */
+#start-screen, #question-screen, #result-screen {
+    animation: fadeIn 0.5s ease;
+}
+
+/* 1. 开始界面 */
+#start-screen {
     text-align: center;
-    min-height: 200px;
+    padding: 40px 20px;
 }
 
-.quiz-item {
-    text-align: left;
+#start-screen h3 {
+    font-size: 24px;
+    color: var(--dark-green);
+    margin-bottom: 15px;
+}
+
+#start-screen p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* 2. 题目界面 */
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
+    color: #888;
+    font-size: 14px;
 }
 
-.quiz-opt {
-    display: block;
-    margin: 10px 0;
-    padding: 10px;
-    background: #f5f5f5;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s;
+#question-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 25px;
+    line-height: 1.5;
+    padding: 0 10px;
 }
-.quiz-opt:hover { background: #e0e0e0; }
 
-.btn-submit {
-    padding: 10px 30px;
-    background: var(--primary-green);
-    color: white;
-    border: none;
-    border-radius: 20px;
+#options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 选项按钮 (对应 JS 中的 .quiz-option-btn) */
+.quiz-option-btn {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    background: #fff;
+    border-radius: 10px;
+    text-align: left;
     font-size: 16px;
+    color: #444;
     cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+/* 悬停效果 (未禁用时) */
+.quiz-option-btn:hover:not(:disabled) {
+    border-color: var(--primary-green);
+    background: var(--light-bg);
+    color: var(--dark-green);
+    padding-left: 25px; /* 微微右移的动效 */
+}
+
+/* 禁用状态 (选完答案后) */
+.quiz-option-btn:disabled {
+    cursor: default;
+    opacity: 0.9; /* 保持可见度 */
+}
+
+/* 3. 结算界面 */
+#result-screen {
+    text-align: center;
+    padding-top: 30px;
+}
+
+/* 分数圆环效果 */
+.score-circle {
+    width: 120px;
+    height: 120px;
+    background: var(--primary-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    border: 5px solid #fff;
+    outline: 5px solid #e8f5e9;
+}
+
+#final-score {
+    font-size: 48px;
+    color: #fff;
+    font-weight: bold;
+}
+
+#result-comment {
+    font-size: 20px;
+    color: var(--dark-green);
+    margin-bottom: 30px;
+    font-weight: bold;
 }
 
 /* =========================================
